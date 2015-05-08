@@ -4,16 +4,49 @@ output:
   html_document:
     keep_md: true
 ---
-
+## Loading required packages
+```{r}
+require(dplyr)
+require(ggplot2)
+```
 
 ## Loading and preprocessing the data
+
+When the CSV file is read in, we set *stringsasFactors* to FALSE in order to avoid unnecessary (in this case) complications caused by strings being imported as factors. We also set the classes appropriately for each column.
+
+```{r}
+# Set the correct working directory
+setwd("/home/sean/DataScience/RepData_PeerAssessment1")
+# Read in the data file
+Data <- read.csv("activity.csv", stringsAsFactors = FALSE, colClasses=c("numeric", "Date", "numeric"))
+```
 
 
 
 ## What is mean total number of steps taken per day?
 
+We now want to calculate the total number of steps taken per day, dplyr is used to group the observations and sum them.
 
+```{r}
+stepsPerDay <- group_by(Data,date) %>%
+    summarise(steps=sum(steps))
+```
 
+Now we will plot this data as a histogram - we use the Freedman-Diaconis rule to determine the bin width as that is normally pretty robust.
+
+```{r}
+hist(stepsPerDay$steps,breaks="FD", xlab="Steps/day", main="Histogram of The Number of Steps Per Day")
+```
+
+We now want to calculate the mean and median of the number of steps per day.
+
+```{r}
+mean <- mean(stepsPerDay$steps, na.rm=TRUE)
+median <- median(stepsPerDay$steps, na.rm=TRUE)
+```
+ The mean = `r mean`  
+ The median = `r median`
+ 
 ## What is the average daily activity pattern?
 
 
