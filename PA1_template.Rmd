@@ -49,10 +49,54 @@ median <- median(stepsPerDay$steps, na.rm=TRUE)
  
 ## What is the average daily activity pattern?
 
+We now want to see how the number of steps varies as a function of time of day so we will average each of the 5 minute timeslots across all days.
+
+```{r}
+stepsPerTimeslot <- group_by(Data,interval) %>%
+    summarise(meansteps=mean(steps, na.rm=TRUE))
+plot(stepsPerTimeslot, type="l",ylab="Mean steps", main="Steps taken on average through the week \n during each 5 minute sample interval")
+```
 
 
 ## Imputing missing values
 
+Firstly we want to see what fraction of our **original** dataset is missing (NA).
 
+```{r}
+print(sum(is.na(Data$steps)))
+```
+
+So we see that 2304 observations out of a total of 17568 observations are missing - this is approximately 13% which is not negigible. We need to try to impute the missing values in order to see what effect this has if any. The strategy that we chose was to replace any NA values with the average number of timeslots for that 5 minute timeslot computed ignoring NA values.
+
+Firstly we add a new column to our original dataset with the mean corresponding to each timeslot and then replace NA values with that value -  dplyr pipe is used to do this.
+
+```{r}
+imputedData <- left_join(Data, stepsPerTimeslot) %>%                # Merge data from stepsPerTimeslot - join will be on interval
+                mutate(steps=ifelse(is.na(steps),meansteps,steps))  # Replace steps with the corresponding mean if its NA
+print(sum(is.na(imputedData$steps)))
+```
+
+So now we have no NA values in the imputed data set and visual inspection shows that values that were NA have been replaced with the mean for that particular timeslot as we desired. Now we repeat the analysis for the imputed data.
+
+```{r}
+imputedstepsPerDay <- group_by(imputedData,date) %>%
+    summarise(steps=sum(steps))
+```
+
+```{r}
+hist(imputedstepsPerDay$steps,breaks="FD", xlab="Steps/day", main="Histogram of The Number of Steps Per Day",col="gray")
+hist(stepsPerDay$steps,breaks="FD",border="red", add=T)
+legend("topleft", legend=c("Imputed Data", "Original Data"), fill=c("gray", NULL), border=c("black", "red"))
+```
+
+```{r}
+imputedmean <- mean(imputedstepsPerDay$steps)
+imputedmedian <- median(imputedstepsPerDay$steps)
+```
+
+ The mean of the imputed data = `r imputedmean`  
+ The median of the imputed data = `r imputedmedian`
+ 
+So we see that the mean value remains the same as it was when we simply removed the NA values from the data. However, this imputation strategy in this case leads to the median number of steps per day being exactly the same as the mean. We also see in the histogram that the bucket that contains the mean value has a higher frequency which makes sense when one considers that we're replacing missing values with values derived from the means calculated with NA values missing.
 
 ## Are there differences in activity patterns between weekdays and weekends?
