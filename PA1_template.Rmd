@@ -8,6 +8,7 @@ output:
 ```{r}
 require(dplyr)
 require(ggplot2)
+require(lattice)
 ```
 
 ## Loading and preprocessing the data
@@ -100,3 +101,19 @@ imputedmedian <- median(imputedstepsPerDay$steps)
 So we see that the mean value remains the same as it was when we simply removed the NA values from the data. However, this imputation strategy in this case leads to the median number of steps per day being exactly the same as the mean. We also see in the histogram that the bucket that contains the mean value has a higher frequency which makes sense when one considers that we're replacing missing values with values derived from the means calculated with NA values missing.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+Firstly we need to add an extra column to the imputed data to classify between weekdays and the weekend. We then take the mean number of steps per interval on weekdays and weekends, finally we use this to make a panel plot.
+
+```{r}
+imputedData$dayCat <- ifelse(weekdays(imputedData$date) %in% c("Saturday", "Sunday"), "weekend", "weekday")
+stepsPerDayCat <- group_by(imputedData,dayCat,interval) %>%
+                    summarise(steps=mean(steps))
+
+xyplot(steps ~interval | dayCat, data=stepsPerDayCat, layout=c(1,2),type=c("l","l"), ylab="Mean Steps")
+```
+
+From the outpyt of this plot, three trends are evident:
+
+* People tend to do less walking early in the morning on the weekend than they do during the week - this is presumably due to people taking the chance to enjoy a lie in and generally being less likely to have to travel to work.
+* Peopl tend to walk more through the day on the weekend - this might be due to them taking the chance to enjoy some exercise rather than being sat at their desk during the day.
+* People tend to carry on being active later in the day on the weekend than the do during the week.
