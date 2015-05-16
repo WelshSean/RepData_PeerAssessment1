@@ -58,6 +58,13 @@ stepsPerTimeslot <- group_by(Data,interval) %>%
 plot(stepsPerTimeslot, type="l",ylab="Mean steps", main="Steps taken on average through the week \n during each 5 minute sample interval")
 ```
 
+In order to find the timeslot which on average contains the maximumnumber of days, we'll subset by the maximum value in the number of steps.
+
+```{r}
+maxInterval <- subset(stepsPerTimeslot, meansteps==max(stepsPerTimeslot$meansteps))[1]
+```
+
+The 5 minute interval that contains the highest mean number of steps across all the days is **`r maxInterval`**
 
 ## Imputing missing values
 
@@ -67,7 +74,7 @@ Firstly we want to see what fraction of our **original** dataset is missing (NA)
 print(sum(is.na(Data$steps)))
 ```
 
-So we see that 2304 observations out of a total of 17568 observations are missing - this is approximately 13% which is not negigible. We need to try to impute the missing values in order to see what effect this has if any. The strategy that we chose was to replace any NA values with the average number of steps for the corresponding 5 minute timeslot computed ignoring NA values.
+So we see that 2304 observations out of a total of 17568 observations have missing data - this is approximately 13% which is not negigible. We need to try to impute the missing values in order to see what effect this has if any. The strategy that we chose was to replace any NA values in the steps column with the average number of steps for the corresponding 5 minute timeslot computed ignoring NA values.
 
 Firstly we add a new column to our original dataset with the mean corresponding to each timeslot and then replace NA values with that value -  a dplyr pipe is used to do this.
 

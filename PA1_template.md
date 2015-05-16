@@ -91,6 +91,14 @@ plot(stepsPerTimeslot, type="l",ylab="Mean steps", main="Steps taken on average 
 
 ![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
 
+In order to find the timeslot which on average contains the maximumnumber of days, we'll subset by the maximum value in the number of steps.
+
+
+```r
+maxInterval <- subset(stepsPerTimeslot, meansteps==max(stepsPerTimeslot$meansteps))[1]
+```
+
+The 5 minute interval that contains the highest mean number of steps across all the days is **835**
 
 ## Imputing missing values
 
@@ -105,9 +113,9 @@ print(sum(is.na(Data$steps)))
 ## [1] 2304
 ```
 
-So we see that 2304 observations out of a total of 17568 observations are missing - this is approximately 13% which is not negigible. We need to try to impute the missing values in order to see what effect this has if any. The strategy that we chose was to replace any NA values with the average number of timeslots for that 5 minute timeslot computed ignoring NA values.
+So we see that 2304 observations out of a total of 17568 observations have missing data - this is approximately 13% which is not negigible. We need to try to impute the missing values in order to see what effect this has if any. The strategy that we chose was to replace any NA values in the steps column with the average number of steps for the corresponding 5 minute timeslot computed ignoring NA values.
 
-Firstly we add a new column to our original dataset with the mean corresponding to each timeslot and then replace NA values with that value -  dplyr pipe is used to do this.
+Firstly we add a new column to our original dataset with the mean corresponding to each timeslot and then replace NA values with that value -  a dplyr pipe is used to do this.
 
 
 ```r
@@ -127,7 +135,7 @@ print(sum(is.na(imputedData$steps)))
 ## [1] 0
 ```
 
-So now we have no NA values in the imputed data set and visual inspection shows that values that were NA have been replaced with the mean for that particular timeslot as we desired. Now we repeat the analysis for the imputed data.
+So now we have no NA values in the imputed data set and visual inspection shows that values that were NA have been replaced with the mean for the relevant timeslot as we desired. Now we repeat the analysis for the imputed data.
 
 
 ```r
@@ -142,7 +150,7 @@ hist(stepsPerDay$steps,breaks="FD",border="red", add=T)
 legend("topleft", legend=c("Imputed Data", "Original Data"), fill=c("gray", NULL), border=c("black", "red"))
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-10-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
 
 
 ```r
@@ -153,11 +161,11 @@ imputedmedian <- median(imputedstepsPerDay$steps)
  The mean of the imputed data = 1.0766189\times 10^{4}  
  The median of the imputed data = 1.0766189\times 10^{4}
  
-So we see that the mean value remains the same as it was when we simply removed the NA values from the data. However, this imputation strategy in this case leads to the median number of steps per day being exactly the same as the mean. We also see in the histogram that the bucket that contains the mean value has a higher frequency which makes sense when one considers that we're replacing missing values with values derived from the means calculated with NA values missing.
+So we see that the mean value remains the same as it was when we simply removed the NA values from the data. However, in this case, the imputation strategy that we chose leads to the median number of steps per day being exactly the same as the mean. We also see in the histogram that the bucket that contains the mean value has a higher frequency which makes sense when one considers that we're replacing missing values with values derived from the means calculated with NA values missing.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-Firstly we need to add an extra column to the imputed data to classify between weekdays and the weekend. We then take the mean number of steps per interval on weekdays and weekends, finally we use this to make a panel plot.
+Firstly we need to add an extra column to the imputed data to classify between weekdays and the weekend. We then compute the mean number of steps per interval on weekdays and weekends, finally we use this to make a panel plot.
 
 
 ```r
@@ -168,10 +176,10 @@ stepsPerDayCat <- group_by(imputedData,dayCat,interval) %>%
 xyplot(steps ~interval | dayCat, data=stepsPerDayCat, layout=c(1,2),type=c("l","l"), ylab="Mean Steps")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png) 
 
-From the outpyt of this plot, three trends are evident:
+From the output of this plot, three trends are evident:
 
 * People tend to do less walking early in the morning on the weekend than they do during the week - this is presumably due to people taking the chance to enjoy a lie in and generally being less likely to have to travel to work.
-* Peopl tend to walk more through the day on the weekend - this might be due to them taking the chance to enjoy some exercise rather than being sat at their desk during the day.
+* People tend to walk more through the day on the weekend - this might be due to them taking the chance to enjoy some exercise rather than being sat at their desk during the day.
 * People tend to carry on being active later in the day on the weekend than the do during the week.
